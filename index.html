@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>我的日誌</title>
+  <meta name="theme-color" content="#f4ede1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="日誌">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,700&family=Allura&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+  <script>
+    // 先套用主題，避免畫面閃爍
+    try {
+      const s = JSON.parse(localStorage.getItem('settings') || '{}');
+      const t = s.theme || 'light';
+      if (t !== 'auto') document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <a class="brand" href="#/">
+        <svg class="logo" viewBox="0 0 48 48" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="24" cy="24" r="21"/><path d="M9 33l10-15 6 9 4-5 10 11"/><path d="M19 18l-3.5-4"/><circle cx="33" cy="15" r="2.4"/></svg>
+        <span class="brand-text"><span class="script">My Life Journal</span><b>我的日誌</b><em class="brand-tag">Collect Beautiful Moments ♡</em></span></a>
+      <nav class="tabs" id="tabs"></nav>
+      <div class="top-actions">
+        <span id="sync" class="sync" title="同步狀態"></span>
+        <button class="btn ghost sm hide-mobile" id="btn-today">今天</button>
+        <button class="btn primary sm hide-mobile" id="btn-write">寫今天的日記</button>
+        <a class="icon-btn only-mobile" id="btn-search" href="#/search" aria-label="搜尋"></a>
+        <button class="icon-btn" id="btn-settings" aria-label="設定"></button>
+      </div>
+    </header>
+
+    <div class="layout" id="layout">
+      <main id="main"></main>
+      <aside id="panel" class="panel" aria-label="當日日記"></aside>
+    </div>
+
+    <button class="fab" id="fab" aria-label="寫今天的日記"></button>
+    <nav class="tabbar" id="tabbar"></nav>
+  </div>
+  <div id="modal-root"></div>
+  <div id="toast-root"></div>
+  <noscript>此應用需要啟用 JavaScript。</noscript>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
