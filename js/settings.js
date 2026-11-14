@@ -5,6 +5,41 @@ import { GitHubAdapter } from './storage.js';
 import { $, esc, openModal, toast, store } from './util.js';
 import { icon } from './icons.js';
 
+// 設定連結：把連線資料編成 #/setup=... ，貼到新裝置的瀏覽器即可自動連線（# 後面的內容不會送到任何伺服器）
+const b64u = (str) => btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64u = (str) => atob(str.replace(/-/g, '+').replace(/_/g, '/'));
+export function makeSetupLink(cfg) {
+  const j = JSON.stringify({ o: cfg.owner, r: cfg.repo, b: cfg.branch || 'main', t: cfg.token });
+  return location.origin + location.pathname + '#/setup=' + b64u(j);
+}
+export function parseSetupLink(hash) {
+  const m = /^#\/setup=([\w-]+)$/.exec(hash || '');
+  if (!m) return null;
+  try {
+    const j = JSON.parse(unb64u(m[1]));
+    if (!j.o || !j.r || !j.t) return null;
+    return { owner: j.o, repo: j.r, branch: j.b || 'main', token: j.t };
+  } catch { return null; }
+}
+
+function showSetupLink(cfg) {
+  const link = makeSetupLink(cfg);
+  const m = openModal(`<div class="modal-head"><h3>🔗 新裝置設定連結</h3><button class="icon-btn" data-close aria-label="關閉">${icon('x')}</button></div>
+    <div class="form">
+      <p class="note">在新裝置的瀏覽器打開這個連結，就會自動連線，不用再手動輸入。</p>
+      <p class="note bad">⚠️ 連結裡含有你的 Token，等同密碼：只傳給自己（AirDrop、傳給自己的訊息），用完就刪掉，不要貼到公開的地方。</p>
+      <textarea class="inp" id="sl" rows="4" readonly>${esc(link)}</textarea>
+      <div class="actions"><button class="btn primary grow" id="sl-copy">複製連結</button>${navigator.share ? '<button class="btn grow" id="sl-share">分享</button>' : ''}</div>
+    </div>`);
+  const ta = m.el.querySelector('#sl');
+  ta.onfocus = () => ta.select();
+  m.el.querySelector('#sl-copy').onclick = async () => {
+    try { await navigator.clipboard.writeText(link); toast('已複製連結'); } catch { ta.focus(); ta.select(); toast('請長按選取後拷貝'); }
+  };
+  const sh = m.el.querySelector('#sl-share');
+  if (sh) sh.onclick = () => navigator.share({ title: '我的日誌設定連結', text: link }).catch(() => {});
+}
+
 export function openSettings() {
   const s = S.settings;
   const gh = DB.mode === 'github';
@@ -31,7 +66,7 @@ export function openSettings() {
     <section class="set-sec">
       <h4>資料</h4>
       <div class="actions wrap">
-        ${gh ? `<button class="btn" id="s-rebuild">重建索引</button><a class="btn" target="_blank" rel="noopener" href="https://github.com/${esc(s.owner)}/${esc(s.repo)}">在 GitHub 查看</a>` : '<button class="btn" id="s-export">匯出試用資料</button><button class="btn danger" id="s-reset">清除試用資料</button>'}
+        ${gh ? `<button class="btn" id="s-setuplink">🔗 新裝置設定連結</button><button class="btn" id="s-rebuild">重建索引</button><a class="btn" target="_blank" rel="noopener" href="https://github.com/${esc(s.owner)}/${esc(s.repo)}">在 GitHub 查看</a>` : '<button class="btn" id="s-export">匯出試用資料</button><button class="btn danger" id="s-reset">清除試用資料</button>'}
       </div>
       <p class="muted sm">${gh ? '若你直接在 GitHub 上新增或修改了日記檔，按「重建索引」讓月曆與搜尋更新。' : '試用資料只在這個瀏覽器；連接 GitHub 後會使用 repo 內的資料。'}</p>
     </section>
@@ -68,6 +103,9 @@ export function openSettings() {
 
   const dc = $('#s-disconnect', el);
   if (dc) dc.onclick = async () => { saveSettings({ mode: 'demo', token: '' }); await DB.init(); m.close(); hooks.syncState('demo'); hooks.renderAll(); toast('已切回試用模式（Token 已從此裝置移除）'); };
+
+  const sl = $('#s-setuplink', el);
+  if (sl) sl.onclick = () => showSetupLink(S.settings);
 
   const rb = $('#s-rebuild', el);
   if (rb) rb.onclick = async () => {

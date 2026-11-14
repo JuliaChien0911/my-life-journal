@@ -14,6 +14,8 @@ import { renderTimeline, bindTimeline } from './timeline.js';
 import { renderPlaces, bindPlaces } from './places.js';
 import { openSettings } from './settings.js';
 import { hydrate } from './media.js';
+import { GitHubAdapter } from './storage.js';
+import { parseSetupLink } from './settings.js';
 
 const TABS = [
   { id: 'home', label: '首頁', ic: 'home', href: () => '#/home' },
@@ -134,6 +136,17 @@ async function boot() {
   window.addEventListener('hashchange', route);
   if (window.__MEM_NAV__) document.addEventListener('click', (e) => { const l = e.target.closest('a[href^="#/"]'); if (l) { e.preventDefault(); go(l.getAttribute('href')); } });
   saveSettings({}); // 套用主題
+
+  // 設定連結：網址 # 後面帶著連線資料，自動連線後立刻從網址列移除
+  const setup = parseSetupLink(location.hash);
+  if (setup) {
+    try { history.replaceState(null, '', location.pathname + location.search + '#/home'); } catch { /* ignore */ }
+    try {
+      const info = await new GitHubAdapter(setup).test();
+      saveSettings({ ...setup, mode: 'github' });
+      toast(`已連線到 ${info.fullName} ✓`);
+    } catch (e) { toast('設定連結無法使用：' + e.message, 'error'); }
+  }
 
   try { await DB.init(); } catch (e) { toast(e.message, 'error'); }
   syncState(DB.mode === 'github' ? 'syncing' : 'demo');
