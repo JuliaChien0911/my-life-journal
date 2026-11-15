@@ -99,14 +99,14 @@ export function renderHome() {
     ['#/trips', icon('plane', 28), '最近旅行', `${t.trips} 次旅行`, tc ? tc.cover : pic(3), 't'],
     ['#/timeline', icon('book', 28), '最近日記', `${t.n} 篇日記`, pic(1) || pic(0), 'd'],
     ['#/stats/' + d.getFullYear(), heart, '收藏回憶', '用愛珍藏的時光', pic(2) || pic(0), 'f'],
-  ].map((x, i) => `<a href="${x[0]}"><div class="dq-img" ${im(x[4], 'q' + x[5], i, 1)}></div><div class="dq-row"><span class="dq-ic">${x[1]}</span><span class="dq-t"><b>${x[2]}</b><small>${x[3]}</small></span><span class="dq-go">${go}</span></div></a>`).join('');
+  ].map((x, i) => `<a href="${x[0]}"><div class="dq-img" style="background-image:url('images/card-${x[5]}.jpg')"></div><div class="dq-row"><span class="dq-ic">${x[1]}</span><span class="dq-t"><b>${x[2]}</b><small>${x[3]}</small></span><span class="dq-go">${go}</span></div></a>`).join('');
 
   // 最新日記
   const le = dates[0], L0 = le ? E[le] : null;
   const tag = L0 ? ((L0.tags && L0.tags[0]) || (L0.trip && (DB.tripById(L0.trip) || {}).name) || '日記') : '';
   const diary = L0
     ? `<button class="dd-body" data-date="${le}"><div class="dd-img" ${im(L0.cover, le, d.getMonth(), 1)}></div><div class="dd-txt"><span class="dd-date">${le.replace(/-/g, '.')}　星期${weekday(le)}</span><h3>${esc(L0.title || L0.excerpt.slice(0, 20) || '（無標題）')}</h3><p>${esc(L0.excerpt)}</p><div class="dd-foot"><span class="dd-pill">${esc(tag)}</span><span class="dd-meta">${cam(18)} ${L0.photos || 0}${L0.location ? ` &nbsp; ${icon('pin', 15)} ${esc(L0.location)}` : ''}</span></div></div></button>`
-    : `<div class="empty"><p>寫下第一篇日記吧</p><button class="btn primary" data-act="write">寫今天的日記</button></div>`;
+    : `<div class="dd-body"><div class="dd-img" style="background-image:url('images/diary.jpg')"></div><div class="dd-txt"><span class="dd-date">${today.replace(/-/g, '.')}　星期${WEEK[d.getDay()]}</span><h3>寫下你的第一篇日記</h3><p>今天的天氣、遇見的人、想留住的風景，都可以記在這裡。</p><div class="dd-foot"><button class="btn primary" data-act="write">寫今天的日記</button></div></div></div>`;
 
   // On This Day
   const md = today.slice(5);
