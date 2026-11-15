@@ -61,7 +61,7 @@ export function openSettings() {
         <label>每週從<select id="s-week" class="inp"><option value="0" ${s.weekStart === 0 ? 'selected' : ''}>週日</option><option value="1" ${s.weekStart === 1 ? 'selected' : ''}>週一</option></select></label>
         <label>主題<select id="s-theme" class="inp"><option value="auto" ${s.theme === 'auto' ? 'selected' : ''}>跟隨系統</option><option value="light" ${s.theme === 'light' ? 'selected' : ''}>淺色</option><option value="dark" ${s.theme === 'dark' ? 'selected' : ''}>深色</option></select></label>
       </div>
-      <div class="note">首頁封面：${DB.home.cover ? '已自訂（在日記裡點照片可更換）' : '自動挑選（在日記裡點照片可指定）'} ${DB.home.cover ? '<button class="link" id="s-homecover">恢復自動</button>' : ''}</div>
+      <div class="note">首頁封面：${DB.home.cover ? '已自訂（可從首頁左下「更換封面」更換）' : '自動挑選（可從首頁「更換封面」指定）'} ${DB.home.cover ? '<button class="link" id="s-homecover">恢復自動</button>' : ''}</div>
     </section>
     <section class="set-sec">
       <h4>資料</h4>

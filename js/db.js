@@ -122,9 +122,9 @@ export const DB = {
   },
 
   // 首頁封面：自己指定一張照片（空字串 = 回到自動挑選）；存在資料庫的 home.json，各裝置共用
-  setHomeCover(path) {
+  setHomeCover(path, pos = '') {
     return this.enqueue(async () => {
-      const home = { ...this.home, cover: path || '' };
+      const home = { ...this.home, cover: path || '', pos: path ? pos : '' };
       await this.adapter.putText('home.json', JSON.stringify(home), '首頁封面');
       this.home = home;
     });

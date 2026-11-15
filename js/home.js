@@ -104,7 +104,8 @@ export function renderHome() {
     ? `<div class="banner"><span>🧪 目前是<b>試用模式</b>，資料只存在這個瀏覽器。</span><button class="link" data-act="settings">連接 GitHub 開始同步 →</button></div>` : '';
 
   return `<div class="mast"><span>VOL. ${String(d.getMonth() + 1).padStart(2, '0')}</span><i></i><span>${MONTH_EN[d.getMonth() + 1].toUpperCase()} ${d.getFullYear()}</span><i></i><span>${t.n} STORIES</span></div>
-  <section class="hh"${cover ? ` data-bg="${esc(cover)}"` : ''} style="${artBg(feat ? feat.id : 'home', 1)}">
+  <section class="hh"${cover ? ` data-bg="${esc(cover)}"` : ''} style="${artBg(feat ? feat.id : 'home', 1)}${DB.home.cover && DB.home.pos ? `;background-position:${esc(DB.home.pos)}` : ''}">
+      <button class="hh-cam" data-act="pick-cover" aria-label="更換封面">${icon('image', 15)}<span>更換封面</span></button>
       <form class="hh-search" id="hs">${icon('search', 16)}<input id="hs-q" type="search" placeholder="搜尋回憶…" autocomplete="off" enterkeyhint="search"></form>
       <div class="hh-in">
         <div class="hh-kicker">${MONTH_EN[d.getMonth() + 1].toUpperCase()} ${d.getFullYear()} · ${feat ? (now ? 'NOW TRAVELING' : 'FEATURED JOURNEY') : 'WELCOME'}</div>
@@ -143,6 +144,7 @@ export function bindHome() {
     if (nav) { hc = { y: new Date(hc.y, hc.m + Number(nav.dataset.hc), 1).getFullYear(), m: new Date(hc.y, hc.m + Number(nav.dataset.hc), 1).getMonth() }; $('#mc').innerHTML = miniCal(); return; }
     const act = e.target.closest('[data-act]')?.dataset.act;
     if (act === 'write') { hooks.openDay(todayStr(), { edit: true }); return; }
+    if (act === 'pick-cover') { import('./covers.js').then((m) => m.pickHomeCover()); return; }
     if (act === 'new-trip') { import('./trips.js').then((m) => m.editTrip(null)); return; }
     const c = e.target.closest('[data-date]');
     if (c) hooks.openDay(c.dataset.date);

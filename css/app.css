@@ -1081,3 +1081,16 @@ h2.sec::after { display: none; }
   .topbar::before { display: none; }
   .brand-text .script { font-size: 28px; }
 }
+
+/* 更換封面（類似 FB） */
+.hh-cam { position: absolute; left: 14px; top: 16px; z-index: 2; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.5); background: rgba(0,0,0,.32); color: #fff; font: 500 12px var(--sans); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); cursor: pointer; }
+.hh-cam:hover { background: rgba(0,0,0,.5); }
+.cp-modal { max-height: 88vh; overflow-y: auto; }
+.cp-up { display: flex; justify-content: center; gap: 8px; width: 100%; cursor: pointer; }
+.cp-title { margin: 14px 0 8px; font-size: 13px; color: var(--muted); }
+.cp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.cp-it { position: relative; aspect-ratio: 1; padding: 0; border: 0; border-radius: 6px; overflow: hidden; background: var(--line, #ddd); cursor: pointer; }
+.cp-it i { position: absolute; inset: 0; background-size: cover; background-position: center; }
+.cp-frame { position: relative; width: 100%; aspect-ratio: 4 / 5; max-height: 60vh; border-radius: 12px; overflow: hidden; background: #ccc center / cover no-repeat; touch-action: none; cursor: grab; }
+.cp-frame.drag { cursor: grabbing; }
+.cp-hint { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); padding: 6px 12px; border-radius: 999px; background: rgba(0,0,0,.5); color: #fff; font-size: 12px; pointer-events: none; white-space: nowrap; }
