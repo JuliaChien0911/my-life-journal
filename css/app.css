@@ -1160,3 +1160,17 @@ h2.sec::after { display: none; }
 .dt-r span { display: flex; align-items: center; gap: 10px; }
 .dt-new { width: 100%; border: 1px dashed var(--line); background: var(--surface); color: var(--ink); justify-content: center; text-shadow: none; font-weight: 700; font-size: 16px; }
 @media (min-width: 760px) { .dq { grid-template-columns: repeat(4, minmax(0, 1fr)); } .dh { min-height: 520px; } .dh-in { padding: 84px 48px 40px; } .dq-img { height: 116px; } }
+
+/* ===== 手機版細修 ===== */
+.dq-img { background-color: #DCE6C6; background-position: center; background-size: cover; background-repeat: no-repeat; }
+@media (max-width: 759px) {
+  .dq-row { gap: 8px; padding: 12px 10px; }
+  .dq-go { display: none; }
+  .dq-ic svg { width: 24px; height: 24px; }
+  .dq-t b { font-size: 14.5px; white-space: nowrap; }
+  .dq-t small { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dt-r { flex-direction: row; flex-wrap: wrap; gap: 8px 16px; font-size: 14px; }
+}
+@media (max-width: 520px) {
+  .brand-text .script { font-size: 23px; }
+}
