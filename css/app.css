@@ -883,6 +883,14 @@ h2.sec::after { content: ''; display: block; width: 28px; height: 2px; margin-to
 .banner { margin: 12px 0 0; }
 .trip-hero { padding-top: 64px; }
 
+
+/* ---------- 開啟密碼畫面 ---------- */
+.applock { position: fixed; inset: 0; z-index: 9999; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.applock-box { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 14px; text-align: center; }
+.applock-box .script { font-family: var(--script); font-size: 34px; color: var(--accent-2); }
+.applock-box h2 { font-family: var(--serif); font-size: 20px; margin: 0; color: var(--ink); }
+.applock-box .link { background: none; border: 0; color: var(--muted); font-size: 13px; text-decoration: underline; cursor: pointer; }
+
 /* ---------- 響應式（放最後，確保覆蓋基礎樣式） ---------- */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {

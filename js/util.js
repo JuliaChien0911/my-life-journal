@@ -22,7 +22,12 @@ export const debounce = (fn, ms = 300) => { let t; return (...a) => { clearTimeo
 
 export const store = {
   get(k, d = null) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
-  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } },
+  set(k, v) {
+    try {
+      if ((k.startsWith('dc:') || k.startsWith('draft:')) && localStorage.getItem('applock')) return true; // 開啟密碼時，日記內容不留在本機
+      localStorage.setItem(k, JSON.stringify(v)); return true;
+    } catch { return false; }
+  },
   del(k) { try { localStorage.removeItem(k); } catch { /* ignore */ } },
 };
 

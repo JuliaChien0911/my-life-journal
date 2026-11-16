@@ -1,5 +1,6 @@
 // 全域狀態與設定
 import { store, todayStr, parseYmd } from './util.js';
+import { applock } from './applock.js';
 
 export const DEFAULT_SETTINGS = {
   mode: 'demo',        // 'demo' | 'github'
@@ -26,7 +27,10 @@ export const S = {
 
 export function saveSettings(patch) {
   Object.assign(S.settings, patch);
-  store.set('settings', S.settings);
+  if (applock.enabled) { // 開啟密碼：Token 不以明文存進瀏覽器
+    store.set('settings', { ...S.settings, token: '' });
+    if ('token' in patch) applock.updateToken(S.settings.token).catch(() => {});
+  } else store.set('settings', S.settings);
   if (S.settings.theme === 'auto') delete document.documentElement.dataset.theme;
   else document.documentElement.dataset.theme = S.settings.theme;
 }

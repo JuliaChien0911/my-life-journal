@@ -56,11 +56,11 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // 密碼輸入視窗：create=true 時要輸入兩次
-export function askPass({ create = false, title = '輸入日記密碼' } = {}) {
+export function askPass({ create = false, title = '輸入日記密碼', note = '' } = {}) {
   return new Promise((resolve) => {
     const m = openModal(`<div class="modal-head"><h3>🔒 ${esc(title)}</h3></div>
       <form class="form" id="pf">
-        ${create ? '<p class="note">這是第一次使用日記鎖。請設定一組密碼：上鎖的日記會加密後才存到 GitHub，<b>忘記密碼就無法復原</b>，請務必記好。</p>' : ''}
+        ${create ? (note || '<p class="note">這是第一次使用日記鎖。請設定一組密碼：上鎖的日記會加密後才存到 GitHub，<b>忘記密碼就無法復原</b>，請務必記好。</p>') : ''}
         <input class="inp" id="p1" type="password" autocomplete="${create ? 'new-password' : 'current-password'}" placeholder="密碼" required minlength="${create ? 6 : 1}">
         ${create ? '<input class="inp" id="p2" type="password" autocomplete="new-password" placeholder="再輸入一次（至少 6 個字元）" required minlength="6">' : ''}
         <div class="note bad" id="pe" hidden></div>

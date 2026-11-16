@@ -16,6 +16,7 @@ import { openSettings } from './settings.js';
 import { hydrate } from './media.js';
 import { GitHubAdapter } from './storage.js';
 import { parseSetupLink } from './settings.js';
+import { applock, gate } from './applock.js';
 
 const TABS = [
   { id: 'home', label: '首頁', ic: 'home', href: () => '#/home' },
@@ -136,6 +137,12 @@ async function boot() {
   window.addEventListener('hashchange', route);
   if (window.__MEM_NAV__) document.addEventListener('click', (e) => { const l = e.target.closest('a[href^="#/"]'); if (l) { e.preventDefault(); go(l.getAttribute('href')); } });
   saveSettings({}); // 套用主題
+
+  // 開啟密碼：先解鎖才會載入任何資料
+  if (applock.enabled) {
+    const token = await gate();
+    S.settings.token = token;
+  }
 
   // 設定連結：網址 # 後面帶著連線資料，自動連線後立刻從網址列移除
   const setup = parseSetupLink(location.hash);

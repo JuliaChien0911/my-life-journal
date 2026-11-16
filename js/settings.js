@@ -4,6 +4,8 @@ import { DB } from './db.js';
 import { GitHubAdapter } from './storage.js';
 import { $, esc, openModal, toast, store } from './util.js';
 import { icon } from './icons.js';
+import { applock } from './applock.js';
+import { askPass } from './vault.js';
 
 // 設定連結：把連線資料編成 #/setup=... ，貼到新裝置的瀏覽器即可自動連線（# 後面的內容不會送到任何伺服器）
 const b64u = (str) => btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -56,6 +58,11 @@ export function openSettings() {
       <div id="s-msg" class="note" hidden></div>
     </section>
     <section class="set-sec">
+      <h4>🔐 開啟密碼（這台裝置） ${applock.enabled ? '<span class="pill ok">已啟用</span>' : '<span class="pill">未啟用</span>'}</h4>
+      <p class="muted sm">${applock.enabled ? '每次重新開啟網站都要輸入密碼。Token 已加密，這台裝置不會留下日記內容。' : gh ? '建議在公司電腦等共用裝置啟用：開啟網站要先輸入密碼，Token 會加密，也不會在這台裝置留下日記內容。手機／iPad 不受影響，各裝置各自設定。' : '請先連線到 GitHub，才能啟用開啟密碼。'}</p>
+      <div class="actions wrap">${applock.enabled ? '<button class="btn" id="s-lockoff">關閉開啟密碼</button><button class="btn" id="s-locknow">立即鎖定</button>' : gh ? '<button class="btn primary" id="s-lockon">設定開啟密碼</button>' : ''}</div>
+    </section>
+    <section class="set-sec">
       <h4>外觀</h4>
       <div class="row2">
         <label>每週從<select id="s-week" class="inp"><option value="0" ${s.weekStart === 0 ? 'selected' : ''}>週日</option><option value="1" ${s.weekStart === 1 ? 'selected' : ''}>週一</option></select></label>
@@ -103,6 +110,22 @@ export function openSettings() {
 
   const dc = $('#s-disconnect', el);
   if (dc) dc.onclick = async () => { saveSettings({ mode: 'demo', token: '' }); await DB.init(); m.close(); hooks.syncState('demo'); hooks.renderAll(); toast('已切回試用模式（Token 已從此裝置移除）'); };
+
+
+  const lon = $('#s-lockon', el);
+  if (lon) lon.onclick = async () => {
+    if (!applock.supported()) return toast('這個瀏覽器不支援加密功能', 'error');
+    const pass = await askPass({ create: true, title: '設定開啟密碼', note: '<p class="note">之後在這台裝置開啟網站都要輸入這組密碼。Token 會用它加密，<b>忘記密碼無法找回</b>（只能清除此裝置後重新連線，GitHub 上的日記不受影響）。</p>' });
+    if (!pass) return;
+    try { await applock.enable(pass, S.settings.token); saveSettings({}); m.close(); toast('已啟用開啟密碼 ✓'); } catch (e) { toast(e.message, 'error'); }
+  };
+  const lof = $('#s-lockoff', el);
+  if (lof) lof.onclick = () => {
+    if (!confirm('關閉後，這台裝置開啟網站不再需要密碼，Token 會以明文存回瀏覽器。確定嗎？')) return;
+    applock.disable(); saveSettings({}); m.close(); toast('已關閉開啟密碼');
+  };
+  const lnow = $('#s-locknow', el);
+  if (lnow) lnow.onclick = () => location.reload();
 
   const sl = $('#s-setuplink', el);
   if (sl) sl.onclick = () => showSetupLink(S.settings);
