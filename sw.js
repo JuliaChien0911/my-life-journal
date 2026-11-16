@@ -1,6 +1,6 @@
 // Service Worker：讓 App 可安裝到主畫面，並在離線時仍能開啟外殼。
 // 策略：同源檔案「網路優先、失敗用快取」，所以更新程式碼後下次開啟就會自動換新。
-const VERSION = 'diary-v1-v12';
+const VERSION = 'diary-v1-v13';
 const SHELL = [
   './', 'index.html', 'css/app.css', 'manifest.webmanifest', 'icons/icon.svg',
   'js/app.js', 'js/state.js', 'js/util.js', 'js/icons.js', 'js/md.js', 'js/db.js',
