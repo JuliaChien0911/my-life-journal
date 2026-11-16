@@ -131,7 +131,7 @@ async function renderEditor(el, date, my) {
     <div class="toolbar">
       <button type="button" class="btn ghost sm" data-act="photo">${icon('image', 16)} 照片</button>
       <button type="button" class="btn ghost sm" data-act="preview">${icon('eye', 16)} 預覽</button>
-      <span class="hint" id="hint">支援 Markdown：**粗體**、- 清單、> 引用</span>
+      <span class="hint" id="hint">先點文字中要放的位置，再按「照片」（可多選）</span>
     </div>
     <textarea id="f-body" class="inp body" placeholder="${hints[parseYmd(date).getDate() % hints.length]}">${esc(cur.body)}</textarea>
     <div id="preview" class="prose" hidden></div>
@@ -165,6 +165,11 @@ async function renderEditor(el, date, my) {
   const dirty = () => { const c = collect(); return JSON.stringify(c) !== JSON.stringify({ meta: base.meta, body: base.body }); };
 
   const save = async (btns) => {
+    if (uploading) {
+      btns.forEach((b) => { b.disabled = true; b.dataset.old = b.textContent; b.textContent = '等照片上傳完…'; });
+      await uploading.catch(() => {});
+      btns.forEach((b) => { b.disabled = false; b.textContent = b.dataset.old; });
+    }
     const { meta, body: text } = collect();
     if (meta.locked && !vault.unlocked) {
       if (!vault.supported()) { toast('這個瀏覽器不支援加密（需要 https 網址）', 'error'); return; }
@@ -203,8 +208,9 @@ async function renderEditor(el, date, my) {
       saveDraft(); return;
     }
     const act = e.target.closest('[data-act]')?.dataset.act;
+    if (act === 'close' && uploading) { toast('照片還在上傳，請稍候'); return; }
     if (act === 'close') { S.editing = null; go(`#/month/${date.slice(0, 7)}`); }
-    else if (act === 'cancel') { if (dirty() && !confirm('放棄尚未儲存的內容？')) return; store.del(draftKey(date)); exit(); }
+    else if (act === 'cancel') { if (uploading) { toast('照片還在上傳，請稍候'); return; } if (dirty() && !confirm('放棄尚未儲存的內容？')) return; store.del(draftKey(date)); exit(); }
     else if (act === 'save') save($$('[data-act="save"]', el));
     else if (act === 'delete') { if (confirm('確定刪除這天的日記？（GitHub 上仍可從版本紀錄找回）')) { try { await DB.deleteEntry(date); store.del(draftKey(date)); toast('已刪除'); exit(); } catch (err) { toast(err.message, 'error'); } } }
     else if (act === 'photo') $('#f-file', el).click();
@@ -215,24 +221,41 @@ async function renderEditor(el, date, my) {
     }
   };
 
-  $('#f-file', el).onchange = async (e) => {
+  // 記住游標位置：點「照片」按鈕時 textarea 會失去焦點，照片要插在最後停留的位置
+  let lastPos = body.value.length;
+  const remember = () => { lastPos = body.selectionStart ?? lastPos; };
+  ['keyup', 'click', 'select', 'blur', 'input'].forEach((ev) => body.addEventListener(ev, remember));
+  const setHint = (t) => { const h = $('#hint', el); if (h) h.textContent = t; };
+  let uploading = null; // 上傳中的 Promise；儲存時會等它完成
+
+  $('#f-file', el).onchange = (e) => {
     const files = [...e.target.files];
     e.target.value = '';
-    for (const f of files) {
-      const hint = $('#hint', el);
-      try {
-        hint.textContent = '處理照片中…';
-        const blob = await resizeImage(f);
-        const thumb = await resizeImage(f, 360, 0.7);
-        hint.textContent = DB.mode === 'github' ? '上傳到 GitHub…' : '儲存照片…';
-        const path = await DB.uploadPhoto(date, blob, thumb);
-        const pos = body.selectionStart ?? body.value.length;
-        const ins = `${pos && body.value[pos - 1] !== '\n' ? '\n' : ''}![](${path})\n`;
-        body.value = body.value.slice(0, pos) + ins + body.value.slice(pos);
-        grow(); saveDraft();
-        hint.textContent = '照片已加入 ✓';
-      } catch (err) { toast('照片失敗：' + err.message, 'error'); hint.textContent = ''; }
-    }
+    if (!files.length) return;
+    const run = async () => {
+      let ok = 0;
+      for (const [i, f] of files.entries()) {
+        const n = files.length > 1 ? ` ${i + 1}/${files.length}` : '';
+        try {
+          setHint(`處理照片${n}…`);
+          const blob = await resizeImage(f);
+          const thumb = await resizeImage(f, 360, 0.7);
+          setHint((DB.mode === 'github' ? '上傳到 GitHub' : '儲存照片') + `${n}…`);
+          const path = await DB.uploadPhoto(date, blob, thumb);
+          const pos = Math.min(lastPos, body.value.length);
+          const ins = `${pos && body.value[pos - 1] !== '\n' ? '\n' : ''}![](${path})\n`;
+          body.value = body.value.slice(0, pos) + ins + body.value.slice(pos);
+          lastPos = pos + ins.length;
+          ok++;
+          grow(); saveDraft();
+        } catch (err) { toast(`照片${n} 失敗：` + err.message, 'error'); }
+      }
+      setHint(ok ? `已加入 ${ok} 張照片 ✓` : '');
+    };
+    const prev = uploading || Promise.resolve();
+    const job = prev.then(run);
+    uploading = job;
+    job.finally(() => { if (uploading === job) uploading = null; });
   };
   el.onkeydown = (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') { e.preventDefault(); save($$('[data-act="save"]', el)); }
