@@ -32,7 +32,8 @@ const activeTab = () => (S.view === 'trip' ? 'trips' : S.view);
 
 /* ---------- 路由 ---------- */
 function route() {
-  const [name, arg] = getHash().replace(/^#\/?/, '').split('/');
+  const [name, rawArg] = getHash().replace(/^#\/?/, '').split('/');
+  let arg = rawArg; try { arg = rawArg && decodeURIComponent(rawArg); } catch { /* 保留原值 */ }
   const now = new Date();
   const setCursor = (s) => { const [y, m] = s.split('-').map(Number); S.cursor = { y, m: m - 1 }; };
   switch (name) {
